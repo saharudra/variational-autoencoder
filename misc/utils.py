@@ -1,0 +1,33 @@
+import os
+import errno
+import numpy as np
+import math
+from misc.config import cfg
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
+
+def reshape_and_tile_images(array, n_cols=None):
+    shape = [28, 28, 1]
+    if n_cols is None:
+        n_cols = int(math.sqrt(array.shape[0]))
+    n_rows = int(math.ceil(float(array.shape[0])/n_cols))
+
+    def cell(i, j):
+        ind = i*n_cols+j
+        if i*n_cols+j < array.shape[0]:
+            return array[ind].reshape(*shape, order='C')
+        else:
+            return np.zeros(shape)
+
+    def row(i):
+        return np.concatenate([cell(i, j) for j in range(n_cols)], axis=1)
+
+    return np.concatenate([row(i) for i in range(n_rows)], axis=0)
